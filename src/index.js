@@ -1,6 +1,9 @@
 // Importing database functions. DO NOT MODIFY THIS LINE.
 import { central, db1, db2, db3, vault } from "./databases.js";
 
+// As an additional requirement, note that each database request takes 100ms to respond. However, your function must complete in 200ms or less. Since there are three different databases, you must query; one might assume that the minimum time to do so would be 300ms, but that is not the case.
+
+
 /**
  * Retrieves user data from multiple databases.
  *
@@ -16,8 +19,10 @@ async function getUserData(id) {
 
   try {
     const db = await central(id);
-    const personalData = await dbs[db](id);
-    const secretPersonalData = await vault(id);
+    const [personalData, secretPersonalData] = await Promise.all([
+      dbs[db](id),
+      vault(id)
+    ]);
 
     return {
       id,
@@ -30,9 +35,15 @@ async function getUserData(id) {
   }
 }
 
+// Start timing
+console.time('myFunction');
+
 getUserData(1)
   .then(console.log)
-  .catch(error => console.error('Error:', error));
+  .catch(error => console.error('Error:', error))
+  .finally(() => {
+    console.timeEnd('myFunction');
+  });
 
 // Sample output object format:
 // {
