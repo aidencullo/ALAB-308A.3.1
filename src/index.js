@@ -18,11 +18,16 @@ async function getUserData(id) {
   };
 
   try {
-    const db = await central(id);
+    // myFunction: 429.136962890625 ms
     const [personalData, secretPersonalData] = await Promise.all([
-      dbs[db](id),
+      central(id).then(db => dbs[db](id)),
       vault(id)
     ]);
+
+    // myFunction: 1339.989990234375 ms
+    // const db = await central(id);
+    // const personalData = await dbs[db](id);
+    // const secretPersonalData = await vault(id);
 
     return {
       id,
@@ -35,31 +40,10 @@ async function getUserData(id) {
   }
 }
 
-// Start timing
-console.time('myFunction');
+async function timedFunction() {
+  console.time('myFunction');
+  const response = await getUserData(1)
+  console.timeEnd('myFunction');
+}
 
-getUserData(1)
-  .then(console.log)
-  .catch(error => console.error('Error:', error))
-  .finally(() => {
-    console.timeEnd('myFunction');
-  });
-
-// Sample output object format:
-// {
-//     id: number,
-//     name: string,
-//     username: string,
-//     email: string,
-//     address: {
-//       street: string,
-//       suite: string,
-//       city: string,
-//       zipcode: string,
-//       geo: {
-//         lat: string,
-//         lng: string
-//       }
-//     },
-//     phone: string,
-//    
+timedFunction();
