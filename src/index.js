@@ -9,14 +9,16 @@ async function getUserData(id) {
   };
 
   const db = await central(id);
-  const person = await dbs[db](id);
-  const secretPerson = await vault(id);
-  console.log(person);
-  console.log(secretPerson);
-  return person;
+  const personalData = await dbs[db](id);
+  const secretPersonalData = await vault(id);
+  return { id,
+	   ...personalData,
+	   ...secretPersonalData
+	 };
 }
 
-getUserData(1);
+getUserData(1)
+  .then(console.log)
 
 
 // sample output obj
