@@ -7,30 +7,54 @@ async function getUserData(id) {
     db3: db3,
   };
 
-  try {
-    const dbPromise = central(id);
-    const vaultPromise = vault(id);
+  const dbPromise = central(id);
+  const dbName = await dbPromise;
+  const personalDataPromise = dbs[dbName](id);
+  const vaultPromise = vault(id);
+  const [personalData, secretPersonalData] = await Promise.all([
+    personalDataPromise,
+    vaultPromise,
+  ]);
 
-    const dbName = await dbPromise;
-    const personalDataPromise = dbs[dbName](id);
-
-    const [personalData, secretPersonalData] = await Promise.all([
-      personalDataPromise,
-      vaultPromise,
-    ]);
-
-    return {
-      id,
-      ...personalData,
-      ...secretPersonalData,
-    };
-  } catch (error) {
-    console.error(`Error retrieving data for user ${id}:`, error);
-    throw new Error(`Failed to retrieve user data for ID ${id}`);
-  }
+  return {
+    id,
+    ...personalData,
+    ...secretPersonalData,
+  };
 }
 
+async function testSuite() {
 
-getUserData(1)
-  .then(console.log)
-  .catch(console.error);
+  Array.from({ length: 10 }, (_, i) => i + 1).map(async (i) => {
+    try {
+      const userData = await getUserData(i);
+      console.log(`User data for IDI${i}:`, userData);
+    } catch (error) {
+      console.error(`Error retrieving data for user ${i}:`, error);
+    }
+  });
+
+  try {
+    const userData = await getUserData(11);
+    console.log(`User data for IDI11:`, userData);
+  } catch (error) {
+    console.error(`Error retrieving data for user 11:`, error);
+  }
+
+  try {
+    const userData = await getUserData(12);
+    console.log(`User data for IDI12:`, userData);
+  } catch (error) {
+    console.error(`Error retrieving data for user 12:`, error);
+  }
+
+  try {
+    const userData = await getUserData(0);
+    console.log(`User data for IDI0:`, userData);
+  } catch (error) {
+    console.error(`Error retrieving data for user 0:`, error);
+  }
+
+}
+
+testSuite();
